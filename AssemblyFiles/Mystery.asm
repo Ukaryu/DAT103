@@ -2,40 +2,54 @@
 
 ; Datasegment
 section .bss
-	number resb 1
+	number resb 4
 
 section .text
 
 global _start
 _start:
-	mov ax, 0
-	mov cx, 0
-	
-start_for: 		;For-loop
-	cmp cx, 20
-	jge slutt_for
+	mov sp, 0
+	mov ecx, 0
 
-	cmp cx, 10	; IF-condition
+start_for: 		;For-loop
+	cmp sp, 20
+	jge end_for
+
+	cmp sp, 10	; IF-condition
 	jl if
 	jge else
 if:
-	inc ax
-	inc cx
+	inc ecx
+	inc sp
 	jmp start_for
 
 else:
-	dec ax
-	inc cx
+	dec ecx
+	inc sp
 	jmp start_for
 
-slutt_for:
+end_for:
 
 	; Writing out result of loop
-	 	
-	mov eax, 4
+	push eax
+	push ebx
+	push ecx
+	push edx
+	add ecx, "0"  	; Converting number to ASCII
+	mov dword [number], ecx
+	mov ecx, number
+	mov edx, 2
 	mov ebx, 1
-	add ax, "0"
-	mov edx, 1
+	mov eax, 4
 	int 80h
+	pop edx
+	pop ecx
+	pop ebx
+	pop eax 	
 	
+end:
+	mov eax, 1
+	mov ebx, 0
+	int 80h
+
 	
