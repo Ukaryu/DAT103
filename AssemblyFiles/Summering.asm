@@ -49,6 +49,7 @@ _start:
 	; Vellykket: edx = 0, tall i ecx
 	cmp edx, 0 ; Test om vellykket innlesning
 	jne Slutt
+	mov ebx, ecx  ; Andre tall/siffer lagres i reg ebx
 
 	call nylinje
 	add eax, ebx
@@ -74,10 +75,10 @@ skrivsiffer:
 	mov ebx, STDOUT
 	mov eax, SYS_WRITE
 	int 80h
-	push edx
-	push ecx
-	push ebx
-	push eax
+	pop edx
+	pop ecx
+	pop ebx
+	pop eax
 	ret
 
 ;---------------------------------------------------
@@ -91,7 +92,7 @@ Lokke:
 	mov eax, 3
 	mov ebx, 0
 	mov ecx, siffer
-	mov edx, 2
+	mov edx, 1
 	int 80h
 	mov ecx, [siffer]
 	cmp ecx, " "
