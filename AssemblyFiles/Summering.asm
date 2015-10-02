@@ -97,9 +97,9 @@ Lokke:
 	mov ecx, [siffer]
 	cmp ecx, " "
 	je Lokke
-	cmp ecx, "0" ; Sjekk at tast er i område 0-9
+	cmp ecx, "00" ; Sjekk at tast er i område 0-9
 	jb Feil
-	cmp ecx, "9"
+	cmp ecx, "18"
 	ja Feil
 	sub ecx, "0" ; Konverter ASCII til tall.
 	mov edx, 0   ; Signaliser vellykket innlesning
