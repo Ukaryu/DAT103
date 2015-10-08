@@ -19,12 +19,16 @@ section .bss
 ; Datasegment
 section .data
 	meld db "Skriv to ensifrede tall skilt med mellomrom.",cr,lf
-		db "Summen av tallene maa, vaere mindre enn 10.",cr,lf
 	meldlen equ $ - meld
 	feilmeld db cr,lf, "Skriv kun sifre!",cr,lf
 	feillen equ $ - feilmeld
 	crlf db cr,lf,"$"
 	crlflen equ $ - crlf
+	sum db "  "
+	sumMeld db "Summen er:", cr,lf
+	sumMeldLen equ $ - sumMeld
+	mellomrom db "     ",cr,lf
+	mellomromLen equ $ - mellomrom
 
 ; Kodesegment med program
 section .text
@@ -40,21 +44,25 @@ _start:
 	; Les tall, innlest tall returneres i ecx
 	; Vellykket retur dersom edx = 0
 	call lessiffer
-	cmp edx, 0 ; Test om vellykket innlesning
-	jne Slutt ; Hopp til avslutning ved feil i innlesning
-	mov eax, ecx ; Første tall/siffer lagres i reg eax
+	cmp edx, 0 	 ; Test om vellykket innlesning
+	jne Slutt 	 ; Hopp til avslutning ved feil i innlesning
+	mov al, cl 	 ; Første tall/siffer lagres i reg al
 
 	call lessiffer
 	; Les andre tall/siffer
 	; Vellykket: edx = 0, tall i ecx
-	cmp edx, 0 ; Test om vellykket innlesning
+	cmp edx, 0 	 ; Test om vellykket innlesning
 	jne Slutt
-	mov ebx, ecx  ; Andre tall/siffer lagres i reg ebx
+	mov bl, cl	 ; Andre tall/siffer lagres i reg cl
 
 	call nylinje
-	add eax, ebx
-	mov ecx, eax
-	call skrivsiffer ; Skriv ut verdi i exc som ensifret tall
+	add al, bl	 ;Adderer sifferet i bl til sifferet i al
+	aaa
+	or ax, 3030h
+	mov [sum], ah
+	mov [sum + 1], al
+	
+	call skrivsiffer ; Skriv ut verdi i ecx som ensifret tall
 
 Slutt:
 	mov eax, SYS_EXIT
@@ -63,22 +71,25 @@ Slutt:
 
 ;---------------------------------------------------
 skrivsiffer:
-	; Skriver ut sifferet lagret i ecx. Ingen sjekk på verdiområde.
-	push eax
-	push ebx
-	push ecx
-	push edx
-	add ecx, "0" ; Konverter tall ASCII
-	mov dword [siffer], ecx
-	mov ecx, siffer
-	mov edx, 2
+	; Skriver ut sifferet lagret i sum
+
+	mov edx, sumMeldLen
+	mov ecx, sumMeld
 	mov ebx, STDOUT
 	mov eax, SYS_WRITE
 	int 80h
-	pop edx
-	pop ecx
-	pop ebx
-	pop eax
+
+	mov edx, 2
+	mov ecx, sum
+	mov ebx, STDOUT
+	mov eax, SYS_WRITE
+	int 80h
+
+	mov edx, mellomromLen
+	mov ecx, mellomrom
+	mov ebx, STDOUT
+	mov eax, SYS_WRITE
+	int 80h
 	ret
 
 ;---------------------------------------------------
@@ -89,19 +100,18 @@ lessiffer:
 	push ebx
 Lokke:
 	; Leser et tegn fra tastaturet
-	mov eax, 3
-	mov ebx, 0
+	mov eax, SYS_READ
+	mov ebx, STDIN
 	mov ecx, siffer
 	mov edx, 1
 	int 80h
 	mov ecx, [siffer]
 	cmp ecx, " "
 	je Lokke
-	cmp ecx, "00" ; Sjekk at tast er i område 0-9
+	cmp ecx, "0" ; Sjekk at tast er i område 0-9
 	jb Feil
-	cmp ecx, "18"
+	cmp ecx, "9"
 	ja Feil
-	sub ecx, "0" ; Konverter ASCII til tall.
 	mov edx, 0   ; Signaliser vellykket innlesning
 	pop ebx
 	pop eax
